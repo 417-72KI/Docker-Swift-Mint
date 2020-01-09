@@ -9,6 +9,4 @@ RUN git clone -b ${MINT_REVISION} --depth 1 https://github.com/yonaskolb/Mint.gi
     make -C ~/Mint && \
     rm -rf ~/Mint
 
-RUN mint version
-
-ENTRYPOINT [ "/bin/bash" ]
+CMD [ "/bin/bash" ]
