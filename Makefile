@@ -1,4 +1,4 @@
-IMAGE_NAME = swift-mint-dev
+IMAGE_NAME = swift-mint
 
 build:
 	docker build -t $(IMAGE_NAME) .
@@ -11,6 +11,3 @@ mint_version: build
 
 run: build
 	docker run -it $(IMAGE_NAME)
-
-release: build
-	@scripts/release.sh $(IMAGE_NAME)
