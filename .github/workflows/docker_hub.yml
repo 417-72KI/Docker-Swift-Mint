@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        swift_version: [latest, 5.1]
+        swift_version: [latest]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -27,7 +27,8 @@ jobs:
     - name: Push DockerHub
       run: |
         function push_tag() {
-          echo "${DOCKER_USER}/${DOCKER_REPO}:$1"
+          IMAGE_NAME=$(docker images "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" -q)
+          echo $IMAGE_NAME "${DOCKER_USER}/${DOCKER_REPO}:$1"
         }
         SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version | grep 'Swift version' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
         SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
