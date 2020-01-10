@@ -1,0 +1,23 @@
+name: Validate Dockerfile
+on: 
+  pull_request:
+    paths:
+      - '**/Dockerfile'
+env:
+  DOCKER_USER: 41772ki
+  DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  DOCKER_REPO: swift-mint
+jobs:
+  validate:
+    strategy:
+      matrix:
+        swift_version: [latest, 5.0, 4.2]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build Docker image
+      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift-${{ matrix.swift_version }}
+    - name: Validate Swift version
+      run: docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version
+    - name: Validate Mint version
+      run: docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" mint version
