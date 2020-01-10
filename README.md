@@ -14,6 +14,7 @@ See https://github.com/yonaskolb/Mint
 
 ```sh
 $ docker pull 41772ki/swift-mint:latest
+$ docker run -it 41772ki/swift-mint
 ```
 
 ## Dockerfile
