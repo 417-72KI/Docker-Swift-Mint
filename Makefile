@@ -11,3 +11,6 @@ mint_version: build
 
 run: build
 	docker run -it $(IMAGE_NAME)
+
+clean:
+	docker rmi $(IMAGE_NAME):latest
