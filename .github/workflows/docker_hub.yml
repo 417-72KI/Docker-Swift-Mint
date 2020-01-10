@@ -4,6 +4,7 @@ on:
     branches: [master]
     paths:
       - '.github/workflows/docker_hub.yml'
+      - '.github/workflows/validate.yml'
       - '**/Dockerfile'
 env:
   DOCKER_USER: 41772ki
@@ -13,7 +14,7 @@ jobs:
   build:
     strategy:
       matrix:
-        swift_version: [latest, 5, 4.2]
+        swift_version: [latest, 5]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
