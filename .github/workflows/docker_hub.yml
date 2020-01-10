@@ -23,9 +23,12 @@ jobs:
       run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
     - name: Push DockerHub
       run: |
+        function push_tag() {
+          echo "${DOCKER_USER}/${DOCKER_REPO}:$1"
+        }
         SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version | grep 'Swift version' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
         SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
-        SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
-        echo $SWIFT_VERSION
-        echo $SWIFT_VERSION_MAJOR_MINOR
-        echo $SWIFT_VERSION_MAJOR
+        SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1/g')
+        push_tag $SWIFT_VERSION
+        push_tag $SWIFT_VERSION_MAJOR_MINOR
+        push_tag $SWIFT_VERSION_MAJOR
