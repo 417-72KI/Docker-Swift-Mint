@@ -2,7 +2,7 @@ FROM swift:4.2
 
 LABEL maintainer "417-72KI <417.72ki@gmail.com>"
 
-ARG MINT_REVISION=master
+ARG MINT_REVISION=0.11.3
 ENV MINT_REVISION=${MINT_REVISION}
 
 # Install Mint
