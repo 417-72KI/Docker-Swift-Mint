@@ -28,7 +28,8 @@ jobs:
       run: |
         function push_tag() {
           IMAGE_NAME=$(docker images "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" -q)
-          echo $IMAGE_NAME "${DOCKER_USER}/${DOCKER_REPO}:$1"
+          docker tag $IMAGE_NAME "${DOCKER_USER}/${DOCKER_REPO}:$1"
+          docker push "${DOCKER_USER}/${DOCKER_REPO}:$1"
         }
         SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version | grep 'Swift version' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
         SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
