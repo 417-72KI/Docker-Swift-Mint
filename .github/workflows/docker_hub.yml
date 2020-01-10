@@ -1,0 +1,23 @@
+name: DockerHub
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/docker_hub.yml'
+      - '**/Dockerfile'
+env:
+  DOCKER_USER: 41772ki
+  DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  DOCKER_REPO: swift-mint
+jobs:
+  build:
+    strategy:
+      matrix:
+        version: [5.1]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Login DockerHub
+      run: docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+    - uses: actions/checkout@v1
+    - name: Build Docker image
+      run: docker build swift-${{ matrix.version }}
