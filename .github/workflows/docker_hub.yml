@@ -13,11 +13,11 @@ jobs:
   build:
     strategy:
       matrix:
-        version: [5.1]
+        swift_version: [5.1]
     runs-on: ubuntu-latest
     steps:
     - name: Login DockerHub
-      run: docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+      run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
     - uses: actions/checkout@v1
     - name: Build Docker image
-      run: docker build swift-${{ matrix.version }}
+      run: docker build swift-${{ matrix.swift_version }}
