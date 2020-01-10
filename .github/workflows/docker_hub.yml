@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        swift_version: [5.1]
+        swift_version: [latest, 5.1]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -21,6 +21,9 @@ jobs:
       run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift-${{ matrix.swift_version }}
     - name: Login DockerHub
       run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
+    - name: Push DockerHub (latest)
+      if: matrix.swift_version == 'latest'
+      run: docker push "${DOCKER_USER}/${DOCKER_REPO}:latest"
     - name: Push DockerHub
       run: |
         function push_tag() {
