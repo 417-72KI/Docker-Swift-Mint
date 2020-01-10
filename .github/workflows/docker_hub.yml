@@ -16,8 +16,16 @@ jobs:
         swift_version: [5.1]
     runs-on: ubuntu-latest
     steps:
-    - name: Login DockerHub
-      run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
     - uses: actions/checkout@v1
     - name: Build Docker image
-      run: docker build swift-${{ matrix.swift_version }}
+      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift-${{ matrix.swift_version }}
+    - name: Login DockerHub
+      run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
+    - name: Push DockerHub
+      run: |
+        SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version | grep 'Swift version' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
+        SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
+        SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
+        echo $SWIFT_VERSION
+        echo $SWIFT_VERSION_MAJOR_MINOR
+        echo $SWIFT_VERSION_MAJOR
