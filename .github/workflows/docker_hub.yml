@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build Docker image
-      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" .
+      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
     - name: Login DockerHub
       run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
     - name: Push DockerHub
