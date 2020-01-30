@@ -7,6 +7,10 @@ Mint is a package manager that installs and runs Swift command line tool package
 
 See https://github.com/yonaskolb/Mint
 
+Copyright (c) 2017 Yonas Kolb  
+Released under the MIT license  
+https://github.com/yonaskolb/Mint/blob/master/LICENSE
+
 # Usage
 
 ## Shell
