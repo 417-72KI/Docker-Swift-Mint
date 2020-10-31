@@ -10,6 +10,8 @@ ENV MINT_REVISION=${MINT_REVISION}
 RUN git clone -b "${MINT_REVISION}" --depth 1 "https://github.com/yonaskolb/Mint.git" ~/Mint && \
     cd ~/Mint && \
     swift build --disable-sandbox -c release && \
+    mkdir -p /usr/local/bin && \
+    cp -f .build/release/mint /usr/local/bin/mint && \
     cd && \
     rm -rf ~/Mint
 
