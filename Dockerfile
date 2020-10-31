@@ -8,7 +8,9 @@ ENV MINT_REVISION=${MINT_REVISION}
 
 # Install Mint
 RUN git clone -b "${MINT_REVISION}" --depth 1 "https://github.com/yonaskolb/Mint.git" ~/Mint && \
-    make -C ~/Mint && \
+    cd ~/Mint && \
+    swift build --disable-sandbox -c release && \
+    cd && \
     rm -rf ~/Mint
 
 CMD [ "/bin/bash" ]
