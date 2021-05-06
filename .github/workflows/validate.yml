@@ -21,7 +21,7 @@ jobs:
         mint_revision: [master]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Build Docker image
       run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" --build-arg "MINT_REVISION=${{ matrix.mint_revision }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
     - name: Validate Swift version
