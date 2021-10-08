@@ -16,7 +16,7 @@ push_tag "${SWIFT_VERSION}-${SOURCE_BRANCH}"
 push_tag "${SWIFT_VERSION_MAJOR_MINOR}"
 push_tag "${SWIFT_VERSION_MAJOR}"
 
-if [[ "${SOURCE_BRANCH}" == "master" ]]; then
+if [[ "${SOURCE_BRANCH}" == "main" ]]; then
     push_tag "${SWIFT_VERSION}"
     push_tag "${SWIFT_VERSION_MAJOR_MINOR}"
     push_tag "${SWIFT_VERSION_MAJOR}"
