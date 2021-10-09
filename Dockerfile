@@ -6,6 +6,8 @@ LABEL maintainer "417-72KI <417.72ki@gmail.com>"
 ARG MINT_REVISION=master
 ENV MINT_REVISION=${MINT_REVISION}
 
+ENV MINT_LINK_PATH="/usr/local/bin"
+
 # Install Mint
 RUN git clone -b "${MINT_REVISION}" --depth 1 "https://github.com/yonaskolb/Mint.git" ~/Mint && \
     cd ~/Mint && \
