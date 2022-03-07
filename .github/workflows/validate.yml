@@ -16,7 +16,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: set-matrix
         run: |
           matrix=$(cat versions.json | jq -c .)
@@ -29,7 +29,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build Docker image
       run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" --build-arg "MINT_REVISION=${{ matrix.mint_revision }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
     - name: Validate Swift version
