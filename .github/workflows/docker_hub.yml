@@ -41,6 +41,11 @@ jobs:
       with:
         username: ${{ env.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
+    - name: Fetch Mint revision installed in current Docker image
+      id: mint-revision
+      run: |
+        MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
+        echo "::set-output name=value::$MINT_REVISION"
     - name: Create tags for push
       id: create-tags
       run: |
