@@ -45,8 +45,8 @@ jobs:
       - name: Export versions
         id: export-versions
         run: |
-          SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version) | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g'
-          MINT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version) | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g'
+          SWIFT_VERSION="$(echo "$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
+          MINT_VERSION="$(echo "$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           cat <<EOF > versions_table.txt
           | Tool  | Version description |
           | ----- | ------------------- |
