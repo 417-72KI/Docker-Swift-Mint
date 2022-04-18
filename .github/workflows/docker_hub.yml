@@ -8,6 +8,7 @@ on:
       - '**/Dockerfile'
   schedule:
     - cron: 0 15 * * 6
+  workflow_dispatch:
 env:
   DOCKER_USER: 41772ki
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
@@ -22,7 +23,7 @@ jobs:
       - uses: actions/checkout@v3
       - id: set-matrix
         run: |
-          matrix=$(cat versions.json | jq -c .)
+          matrix=$(cat .github/matrix.json | jq -c .)
           echo "::set-output name=matrix::$matrix"
   build:
     needs: generate-matrix
@@ -32,26 +33,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build Docker image
-      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
-    - name: Print Versions
-      run: |
-        docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version
-        docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" mint version
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login DockerHub
-      run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
-    - name: Push DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ env.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
+    - name: Create tags for push
+      id: create-tags
       run: |
-        IMAGE_NAME=$(docker images "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" -q)
-        SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version | grep 'Swift version' | awk '{ print $NF }' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
-        scripts/docker_push_tag.sh "$IMAGE_NAME" "${DOCKER_USER}/${DOCKER_REPO}" "$SWIFT_VERSION"
-
         if [ "${{ matrix.swift_version }}" == 'latest' ]; then
-          scripts/docker_push_tag.sh "$IMAGE_NAME" "${DOCKER_USER}/${DOCKER_REPO}" "latest"
-
-          SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1.\2/g')
-          scripts/docker_push_tag.sh "$IMAGE_NAME" "${DOCKER_USER}/${DOCKER_REPO}" "$SWIFT_VERSION_MAJOR_MINOR"
-
-          SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)\.([0-9]*)/\1/g')
-          scripts/docker_push_tag.sh "$IMAGE_NAME" "${DOCKER_USER}/${DOCKER_REPO}" "$SWIFT_VERSION_MAJOR"
+          SWIFT_VERSION=latest BASE_IMAGE=$(eval "echo \"$(cat Dockerfile | grep FROM | awk '{ print $NF }')\"")
+          docker pull $BASE_IMAGE
+          SWIFT_VERSION=$(docker run --entrypoint swift "$BASE_IMAGE" --version | grep 'Swift version' | awk '{ print $NF }' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
+          SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1.\2/g')
+          SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1/g')
+          TAGS=$(echo "[\"latest\", \"$SWIFT_VERSION\", \"$SWIFT_VERSION_MAJOR_MINOR\",\"$SWIFT_VERSION_MAJOR\"]" | jq -r '. | unique | map("${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:" + .) | join(",")')
+          echo "::set-output name=tags::$TAGS"
+        else
+          echo "::set-output name=tags::${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}"
         fi
+    - name: Build Docker image and push to DockerHub
+      uses: docker/build-push-action@v2
+      with: 
+        push: true
+        load: true
+        tags: ${{ steps.create-tags.outputs.tags }}
+        build-args: |
+          SWIFT_VERSION=${{ matrix.swift_version }}
+          MINT_REVISION=${{ matrix.mint_revision }}
+    - name: Print Versions
+      run: docker run --entrypoint show-versions "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}"
