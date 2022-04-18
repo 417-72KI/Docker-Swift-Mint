@@ -32,14 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Login DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ env.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
     - name: Build Docker image
       run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
     - name: Print Versions
       run: |
         docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" swift --version
         docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" mint version
-    - name: Login DockerHub
-      run: echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
     - name: Push DockerHub
       run: |
         IMAGE_NAME=$(docker images "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}" -q)
