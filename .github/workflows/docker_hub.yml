@@ -70,7 +70,22 @@ jobs:
         build-args: |
           SWIFT_VERSION=${{ matrix.swift_version }}
           MINT_REVISION=${{ matrix.mint_revision }}
-    - name: Verify Mint revision
+    - name: Verify Mint revision to check if it needs to update image
+      id: needs-update
       run: |
-        echo $(docker run -t "${{ steps.build-image.outputs.imageid }}" cat /.mint_revision)
-        echo ${{ steps.mint-revision.outputs.value }}
+        BUILT_MINT_REVISION="$(docker run -t "${{ steps.build-image.outputs.imageid }}" cat /.mint_revision)"
+        CURRENT_MINT_REVISION="${{ steps.mint-revision.outputs.value }}"
+        if [ "${BUILT_MINT_REVISION}" != "${CURRENT_MINT_REVISION}" ]; then
+          echo "::set-output name=value::true"
+        else
+          echo "::set-output name=value::false"
+        fi
+    - name: Push image to DockerHub
+      if: ${{ steps.needs-update.outputs.value == 'true' }}
+      uses: docker/build-push-action@v2
+      with: 
+        push: false
+        tags: ${{ steps.create-tags.outputs.tags }}
+        build-args: |
+          SWIFT_VERSION=${{ matrix.swift_version }}
+          MINT_REVISION=${{ matrix.mint_revision }}
