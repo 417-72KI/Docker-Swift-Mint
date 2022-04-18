@@ -6,6 +6,7 @@ on:
       - '.github/workflows/docker_hub.yml'
       - '.github/workflows/validate.yml'
       - '**/Dockerfile'
+      - '.github/matrix.json'
   schedule:
     - cron: 0 15 * * 6
   workflow_dispatch:
