@@ -47,11 +47,12 @@ jobs:
         run: |
           SWIFT_VERSION="$(echo "$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           MINT_VERSION="$(echo "$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
+          MINT_REVISION="$(echo "$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" cat /.mint_revision)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           cat <<EOF > versions_table.txt
           | Tool  | Version description |
           | ----- | ------------------- |
-          | Swift | $SWIFT_VERSION |
-          | Mint  | $MINT_VERSION |
+          | Swift | ${SWIFT_VERSION} |
+          | Mint  | ${MINT_VERSION}<br>${MINT_REVISION} |
           EOF
       - uses: actions/upload-artifact@v3
         with:
