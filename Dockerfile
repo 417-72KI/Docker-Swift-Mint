@@ -11,6 +11,7 @@ ENV MINT_LINK_PATH="/usr/local/bin"
 # Install Mint
 RUN git clone -b "${MINT_REVISION}" --depth 1 "https://github.com/yonaskolb/Mint.git" ~/Mint && \
     cd ~/Mint && \
+    git rev-parse HEAD > ~/.mint_revision && \
     swift build --disable-sandbox -c release && \
     mkdir -p /usr/local/bin && \
     cp -f .build/release/mint /usr/local/bin/mint && \
