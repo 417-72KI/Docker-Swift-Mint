@@ -59,6 +59,6 @@ jobs:
         tags: ${{ steps.create-tags.outputs.tags }}
         build-args: |
           SWIFT_VERSION=${{ matrix.swift_version }}
-          MINT_REVISION=master
+          MINT_REVISION=${{ matrix.mint_revision }}
     - name: Print Versions
       run: docker run --entrypoint show-versions "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}"
