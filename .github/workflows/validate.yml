@@ -30,8 +30,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build Docker image
-      run: docker build -t "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" --build-arg "MINT_REVISION=${{ matrix.mint_revision }}" --build-arg "SWIFT_VERSION=${{ matrix.swift_version }}" .
+    - name: Build Docker image and push to DockerHub
+      uses: docker/build-push-action@v2
+      with: 
+        push: false
+        tags: ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}
+        build-args: |
+          SWIFT_VERSION=${{ matrix.swift_version }}
+          MINT_REVISION=${{ matrix.mint_revision }}
     - name: Validate Swift version
       run: docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version
     - name: Validate Mint version
