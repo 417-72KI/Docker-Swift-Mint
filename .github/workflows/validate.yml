@@ -45,8 +45,8 @@ jobs:
       - name: Export versions
         id: export-versions
         run: |
-          SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version)
-          MINT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version)
+          SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version) | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g'
+          MINT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version) | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g'
           cat <<EOF > versions_table.txt
           | Tool  | Version description |
           | ----- | ------------------- |
@@ -70,7 +70,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for SWIFT_VERSION in $(echo '${{ toJson(matrix.swift_version) }}' | jq -rc '.[]'); do
+          for SWIFT_VERSION in $(cd descriptions && find ./* -type d -exec basename {} \;); do
             echo "## ${SWIFT_VERSION}" >> result.md
             echo '' >> result.md
             cat descriptions/${SWIFT_VERSION}/versions_table.txt >> result.md
