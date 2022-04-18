@@ -46,21 +46,18 @@ jobs:
       id: swift-version
       run: |
         SWIFT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version)
-        echo $SWIFT_VERSION
         echo "::set-output name=value::$SWIFT_VERSION"
     - name: Validate Mint version
       id: mint-version
       run: |
         MINT_VERSION=$(docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version)
-        echo $MINT_VERSION
         echo "::set-output name=value::$MINT_VERSION"
-    - name: Comment to PR
+    - name: Approve PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SWIFT_VERSION: ${{ steps.swift-version.outputs.value }}
         MINT_VERSION: ${{ steps.mint-version.outputs.value }}
       run: |
-        gh pr comment -b "
-        Swift version: $SWIFT_VERSION
-        Mint version: $MINT_VERSION
-        " "${{ github.event.pull_request.html_url }}"
+        echo $SWIFT_VERSION
+        echo $MINT_VERSION
+        gh pr review -a "${{ github.event.pull_request.html_url }}"
