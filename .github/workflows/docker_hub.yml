@@ -41,6 +41,11 @@ jobs:
       with:
         username: ${{ env.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
+    - name: Fetch Mint revision installed in current Docker image
+      id: mint-revision
+      run: |
+        MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
+        echo "::set-output name=value::$MINT_REVISION"
     - name: Create tags for push
       id: create-tags
       run: |
@@ -55,7 +60,32 @@ jobs:
         else
           echo "::set-output name=tags::${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}"
         fi
-    - name: Build Docker image and push to DockerHub
+    - name: Build Docker image
+      id: build-image
+      uses: docker/build-push-action@v2
+      with: 
+        push: false
+        load: true
+        tags: ${{ steps.create-tags.outputs.tags }}
+        build-args: |
+          SWIFT_VERSION=${{ matrix.swift_version }}
+          MINT_REVISION=${{ matrix.mint_revision }}
+    - name: Verify Mint revision to check if it needs to update image
+      id: needs-update
+      run: |
+        BUILT_MINT_REVISION="$(docker run -t "$(echo ${{ steps.build-image.outputs.imageid }} | sed -r 's/:/ /g' | awk '{ print $NF }')" cat /.mint_revision | tr -d '\n')"
+        CURRENT_MINT_REVISION="$(echo ${{ steps.mint-revision.outputs.value }} | tr -d '\n')"
+        echo "${BUILT_MINT_REVISION::8}"
+        echo "${CURRENT_MINT_REVISION::8}"
+        if [ "${BUILT_MINT_REVISION::8}" = "${CURRENT_MINT_REVISION::8}" ]; then
+          echo 'update not required. should skip.'
+          echo "::set-output name=value::false"
+        else
+          echo 'update required.'
+          echo "::set-output name=value::true"
+        fi
+    - name: Push image to DockerHub
+      if: ${{ steps.needs-update.outputs.value == 'true' }}
       uses: docker/build-push-action@v2
       with: 
         push: true
