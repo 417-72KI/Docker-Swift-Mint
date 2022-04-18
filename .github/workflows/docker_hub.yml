@@ -61,6 +61,7 @@ jobs:
           echo "::set-output name=tags::${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}"
         fi
     - name: Build Docker image
+      id: build-image
       uses: docker/build-push-action@v2
       with: 
         push: false
@@ -71,5 +72,5 @@ jobs:
           MINT_REVISION=${{ matrix.mint_revision }}
     - name: Verify Mint revision
       run: |
-        echo $(docker run -t "${{ steps.create-tags.outputs.tags }}" cat /.mint_revision)
+        echo $(docker run -t "${{ steps.build-image.outputs.imageid }}" cat /.mint_revision)
         echo ${{ steps.mint-revision.outputs.value }}
