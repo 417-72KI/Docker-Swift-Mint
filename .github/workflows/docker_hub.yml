@@ -73,12 +73,16 @@ jobs:
     - name: Verify Mint revision to check if it needs to update image
       id: needs-update
       run: |
-        BUILT_MINT_REVISION="$(docker run -t "${{ steps.build-image.outputs.imageid }}" cat /.mint_revision)"
-        CURRENT_MINT_REVISION="${{ steps.mint-revision.outputs.value }}"
-        if [ "${BUILT_MINT_REVISION}" != "${CURRENT_MINT_REVISION}" ]; then
-          echo "::set-output name=value::true"
-        else
+        BUILT_MINT_REVISION="$(docker run -t "$(echo ${{ steps.build-image.outputs.imageid }} | sed -r 's/:/ /g' | awk '{ print $NF }')" cat /.mint_revision | tr -d '\n')"
+        CURRENT_MINT_REVISION="$(echo ${{ steps.mint-revision.outputs.value }} | tr -d '\n')"
+        echo "${BUILT_MINT_REVISION::8}"
+        echo "${CURRENT_MINT_REVISION::8}"
+        if [ "${BUILT_MINT_REVISION::8}" = "${CURRENT_MINT_REVISION::8}" ]; then
+          echo 'update not required. should skip.'
           echo "::set-output name=value::false"
+        else
+          echo 'update required.'
+          echo "::set-output name=value::true"
         fi
     - name: Push image to DockerHub
       if: ${{ steps.needs-update.outputs.value == 'true' }}
