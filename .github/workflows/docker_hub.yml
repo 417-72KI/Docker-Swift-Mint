@@ -58,6 +58,7 @@ jobs:
       uses: docker/build-push-action@v2
       with: 
         push: true
+        load: true
         tags: ${{ steps.create-tags.outputs.tags }}
         build-args: |
           SWIFT_VERSION=${{ matrix.swift_version }}
