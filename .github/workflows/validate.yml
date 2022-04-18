@@ -44,3 +44,11 @@ jobs:
       run: docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" swift --version
     - name: Validate Mint version
       run: docker run "${DOCKER_USER}/${DOCKER_REPO}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}" mint version
+    - name: Test if use cache when build again
+      uses: docker/build-push-action@v2
+      with: 
+        push: false
+        tags: ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}
+        build-args: |
+          SWIFT_VERSION=${{ matrix.swift_version }}
+          MINT_REVISION=${{ matrix.mint_revision }}
