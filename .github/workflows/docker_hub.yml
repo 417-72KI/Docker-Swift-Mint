@@ -33,63 +33,64 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-    - name: Login DockerHub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ env.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_PASS }}
-    - name: Fetch Mint revision installed in current Docker image
-      id: mint-revision
-      run: |
-        MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
-        echo "::set-output name=value::$MINT_REVISION"
-    - name: Create tags for push
-      id: create-tags
-      run: |
-        if [ "${{ matrix.swift_version }}" == 'latest' ]; then
-          SWIFT_VERSION=latest BASE_IMAGE=$(eval "echo \"$(cat Dockerfile | grep FROM | awk '{ print $NF }')\"")
-          docker pull $BASE_IMAGE
-          SWIFT_VERSION=$(docker run --entrypoint swift "$BASE_IMAGE" --version | grep 'Swift version' | awk '{ print $NF }' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
-          SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1.\2/g')
-          SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1/g')
-          TAGS=$(echo "[\"latest\", \"$SWIFT_VERSION\", \"$SWIFT_VERSION_MAJOR_MINOR\",\"$SWIFT_VERSION_MAJOR\"]" | jq -r '. | unique | map("${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:" + .) | join(",")')
-          echo "::set-output name=tags::$TAGS"
-        else
-          echo "::set-output name=tags::${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}"
-        fi
-    - name: Build Docker image
-      id: build-image
-      uses: docker/build-push-action@v2
-      with: 
-        push: false
-        load: true
-        tags: ${{ steps.create-tags.outputs.tags }}
-        build-args: |
-          SWIFT_VERSION=${{ matrix.swift_version }}
-          MINT_REVISION=${{ matrix.mint_revision }}
-    - name: Verify Mint revision to check if it needs to update image
-      id: needs-update
-      run: |
-        BUILT_MINT_REVISION="$(docker run -t "$(echo ${{ steps.build-image.outputs.imageid }} | sed -r 's/:/ /g' | awk '{ print $NF }')" cat /.mint_revision | tr -d '\n')"
-        CURRENT_MINT_REVISION="$(echo ${{ steps.mint-revision.outputs.value }} | tr -d '\n')"
-        echo "${BUILT_MINT_REVISION::8}"
-        echo "${CURRENT_MINT_REVISION::8}"
-        if [ "${BUILT_MINT_REVISION::8}" = "${CURRENT_MINT_REVISION::8}" ]; then
-          echo 'update not required. should skip.'
-          echo "::set-output name=value::false"
-        else
-          echo 'update required.'
-          echo "::set-output name=value::true"
-        fi
-    - name: Push image to DockerHub
-      if: ${{ steps.needs-update.outputs.value == 'true' }}
-      uses: docker/build-push-action@v2
-      with: 
-        push: true
-        tags: ${{ steps.create-tags.outputs.tags }}
-        build-args: |
-          SWIFT_VERSION=${{ matrix.swift_version }}
-          MINT_REVISION=${{ matrix.mint_revision }}
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+      - name: Fetch Mint revision installed in current Docker image
+        id: mint-revision
+        run: |
+          MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
+          echo "::set-output name=value::$MINT_REVISION"
+      - name: Create tags for push
+        id: create-tags
+        run: |
+          if [ "${{ matrix.swift_version }}" == 'latest' ]; then
+            SWIFT_VERSION=latest BASE_IMAGE=$(eval "echo \"$(cat Dockerfile | grep FROM | awk '{ print $NF }')\"")
+            docker pull $BASE_IMAGE
+            SWIFT_VERSION=$(docker run --entrypoint swift "$BASE_IMAGE" --version | grep 'Swift version' | awk '{ print $NF }' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
+            SWIFT_VERSION_MAJOR_MINOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1.\2/g')
+            SWIFT_VERSION_MAJOR=$(echo $SWIFT_VERSION | sed -E 's/([0-9]*)\.([0-9]*)(\.([0-9]*))?/\1/g')
+            TAGS=$(echo "[\"latest\", \"$SWIFT_VERSION\", \"$SWIFT_VERSION_MAJOR_MINOR\",\"$SWIFT_VERSION_MAJOR\"]" | jq -r '. | unique | map("${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:" + .) | join(",")')
+            echo "::set-output name=tags::$TAGS"
+          else
+            echo "::set-output name=tags::${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}"
+          fi
+      - name: Build Docker image
+        id: build-image
+        uses: docker/build-push-action@v2
+        with: 
+          push: false
+          load: true
+          tags: ${{ steps.create-tags.outputs.tags }}
+          build-args: |
+            SWIFT_VERSION=${{ matrix.swift_version }}
+            MINT_REVISION=${{ matrix.mint_revision }}
+      - name: Verify Mint revision to check if it needs to update image
+        id: needs-update
+        run: |
+          IMAGE_ID="$(echo ${{ steps.build-image.outputs.imageid }} | sed -r 's/:/ /g' | awk '{ print $NF }')"
+          BUILT_MINT_REVISION="$(docker run -t "${IMAGE_ID}" cat /.mint_revision | tr -d '\n')"
+          CURRENT_MINT_REVISION="$(echo ${{ steps.mint-revision.outputs.value }} | tr -d '\n')"
+          echo "${BUILT_MINT_REVISION::8}"
+          echo "${CURRENT_MINT_REVISION::8}"
+          if [ "${BUILT_MINT_REVISION::8}" = "${CURRENT_MINT_REVISION::8}" ]; then
+            echo 'update not required. should skip.'
+            echo "::set-output name=value::false"
+          else
+            echo 'update required.'
+            echo "::set-output name=value::true"
+          fi
+      - name: Push image to DockerHub
+        if: ${{ steps.needs-update.outputs.value == 'true' }}
+        uses: docker/build-push-action@v2
+        with: 
+          push: true
+          tags: ${{ steps.create-tags.outputs.tags }}
+          build-args: |
+            SWIFT_VERSION=${{ matrix.swift_version }}
+            MINT_REVISION=${{ matrix.mint_revision }}
