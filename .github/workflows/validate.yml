@@ -43,7 +43,6 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
           push: false
           load: true
           tags: ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}
