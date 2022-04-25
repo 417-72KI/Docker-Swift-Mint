@@ -22,7 +22,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
-      - id: set-matrix
+      - name: Set matrix
+        id: set-matrix
         run: |
           matrix=$(cat .github/matrix.json | jq -c .)
           echo "::set-output name=matrix::$matrix"
@@ -63,7 +64,7 @@ jobs:
       - name: Build Docker image
         id: build-image
         uses: docker/build-push-action@v2
-        with: 
+        with:
           push: false
           load: true
           tags: ${{ steps.create-tags.outputs.tags }}
@@ -71,6 +72,7 @@ jobs:
             SWIFT_VERSION=${{ matrix.swift_version }}
             MINT_REVISION=${{ matrix.mint_revision }}
       - name: Verify Mint revision to check if it needs to update image
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         id: needs-update
         run: |
           IMAGE_ID="$(echo ${{ steps.build-image.outputs.imageid }} | sed -r 's/:/ /g' | awk '{ print $NF }')"
@@ -86,10 +88,10 @@ jobs:
             echo "::set-output name=value::true"
           fi
       - name: Push image to DockerHub
-        if: ${{ steps.needs-update.outputs.value == 'true' }}
+        if: ${{ github.event_name == 'workflow_dispatch' }} || ${{ steps.needs-update.outputs.value == 'true' }}
         uses: docker/build-push-action@v2
-        with: 
-          push: true
+        with:
+          push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.create-tags.outputs.tags }}
           build-args: |
             SWIFT_VERSION=${{ matrix.swift_version }}
