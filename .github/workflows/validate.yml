@@ -19,18 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      latest_swift_version: ${{ steps.set-matrix.outputs.latest_swift_version }}
     steps:
       - uses: actions/checkout@v3
       - id: set-matrix
         run: |
           matrix=$(cat .github/matrix.json | jq -c .)
           echo "::set-output name=matrix::$matrix"
-          matrix=$(cat .github/matrix.json | jq -c .)
-          latest_swift_version=$(echo "$matrix" | jq -rc .latest_swift_version)
-          matrix=$(echo "$matrix" | jq -rc 'del(.latest_swift_version)')
-          echo "::set-output name=matrix::$matrix"
-          echo "::set-output name=latest_swift_version::$latest_swift_version"
 
   build:
     needs: generate-matrix

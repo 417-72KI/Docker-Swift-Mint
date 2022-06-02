@@ -23,17 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      latest-swift-version: ${{ steps.set-matrix.outputs.latest-swift-version }}
     steps:
       - uses: actions/checkout@v3
       - name: Set matrix
         id: set-matrix
         run: |
           matrix=$(cat .github/matrix.json | jq -c .)
-          latest_swift_version=$(echo "$matrix" | jq -rc .latest_swift_version)
-          matrix=$(echo "$matrix" | jq -rc 'del(.latest_swift_version)')
           echo "::set-output name=matrix::$matrix"
-          echo "::set-output name=latest-swift-version::$latest_swift_version"
+
   build:
     needs: generate-matrix
     strategy:
@@ -63,7 +60,7 @@ jobs:
       - name: Create tags for push
         id: create-tags
         run: |
-            LATEST_VERSION="${{ needs.generate-matrix.outputs.latest-swift-version }}"
+            LATEST_VERSION="${{ fromJson(needs.generate-matrix.outputs.matrix).swift_version[0] }}"
             SWIFT_VERSION=${{ matrix.swift_version }} BASE_IMAGE=$(eval "echo \"$(cat Dockerfile | grep FROM | awk '{ print $NF }')\"")
             docker pull $BASE_IMAGE
             SWIFT_VERSION=$(docker run --entrypoint swift "$BASE_IMAGE" --version | grep 'Swift version' | awk '{ print $NF }' | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
