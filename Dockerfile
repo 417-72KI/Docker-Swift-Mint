@@ -1,4 +1,4 @@
-ARG SWIFT_VERSION=5.6
+ARG SWIFT_VERSION=5.7
 FROM swift:${SWIFT_VERSION}-focal
 
 LABEL maintainer "417-72KI <417.72ki@gmail.com>"
