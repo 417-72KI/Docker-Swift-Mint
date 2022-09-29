@@ -55,7 +55,12 @@ jobs:
         if: ${{ github.event_name != 'workflow_dispatch' }}
         id: mint-revision
         run: |
-          MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
+          docker manifest inspect ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} > /dev/null
+          if [[ $? -eq 0 ]]; then
+            MINT_REVISION=$(docker run -t ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} cat /.mint_revision)
+          else
+            MINT_REVISION=''
+          fi
           echo "::set-output name=value::$MINT_REVISION"
       - name: Create tags for push
         id: create-tags
