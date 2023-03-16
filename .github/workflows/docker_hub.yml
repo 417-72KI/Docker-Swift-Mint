@@ -81,7 +81,7 @@ jobs:
             echo "::set-output name=tags::$TAGS"
       - name: Build Docker image
         id: build-image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           push: false
           load: true
@@ -107,7 +107,7 @@ jobs:
           fi
       - name: Push image to DockerHub
         if: ${{ github.event_name == 'workflow_dispatch' || steps.needs-update.outputs.value == 'true' }}
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           platforms: ${{ (matrix.swift_version >= 5.6 && 'linux/amd64,linux/arm64') || 'linux/amd64' }}
           push: ${{ github.ref == 'refs/heads/main' }}
