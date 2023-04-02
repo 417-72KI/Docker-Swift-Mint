@@ -54,6 +54,7 @@ jobs:
       - name: Fetch Mint revision installed in current Docker image
         if: ${{ github.event_name != 'workflow_dispatch' }}
         id: mint-revision
+        continue-on-error: true
         run: |
           docker manifest inspect ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} > /dev/null
           if [[ $? -eq 0 ]]; then
