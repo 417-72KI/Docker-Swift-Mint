@@ -29,7 +29,7 @@ jobs:
         id: set-matrix
         run: |
           matrix=$(cat .github/matrix.json | jq -c .)
-          echo "::set-output name=matrix::$matrix"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   build:
     needs: generate-matrix
@@ -54,6 +54,7 @@ jobs:
       - name: Fetch Mint revision installed in current Docker image
         if: ${{ github.event_name != 'workflow_dispatch' }}
         id: mint-revision
+        continue-on-error: true
         run: |
           docker manifest inspect ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }} > /dev/null
           if [[ $? -eq 0 ]]; then
@@ -61,7 +62,7 @@ jobs:
           else
             MINT_REVISION=''
           fi
-          echo "::set-output name=value::$MINT_REVISION"
+          echo "value=$MINT_REVISION" >> $GITHUB_OUTPUT
       - name: Create tags for push
         id: create-tags
         run: |
@@ -78,7 +79,7 @@ jobs:
               TAGS=$(echo "$TAGS" | jq -c '. | del(.[2])')
             fi
             TAGS=$(echo "$TAGS" | jq -r '. | unique | map("${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:" + .) | join(",")')
-            echo "::set-output name=tags::$TAGS"
+            echo "tags=$TAGS" >> $GITHUB_OUTPUT
       - name: Build Docker image
         id: build-image
         uses: docker/build-push-action@v4
@@ -100,16 +101,17 @@ jobs:
           # echo "${CURRENT_MINT_REVISION::8}"
           if [ "${BUILT_MINT_REVISION::8}" = "${CURRENT_MINT_REVISION::8}" ]; then
             echo 'update not required. should skip.'
-            echo "::set-output name=value::false"
+            echo "value=false" >> $GITHUB_OUTPUT
           else
             echo 'update required.'
-            echo "::set-output name=value::true"
+            echo "value=true" >> $GITHUB_OUTPUT
           fi
       - name: Push image to DockerHub
         if: ${{ github.event_name == 'workflow_dispatch' || steps.needs-update.outputs.value == 'true' }}
         uses: docker/build-push-action@v4
         with:
-          platforms: ${{ (matrix.swift_version >= 5.6 && 'linux/amd64,linux/arm64') || 'linux/amd64' }}
+          # platforms: ${{ (matrix.swift_version >= 5.6 && 'linux/amd64,linux/arm64') || 'linux/amd64' }}
+          platforms: 'linux/amd64'
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.create-tags.outputs.tags }}
           build-args: |
