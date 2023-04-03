@@ -37,5 +37,14 @@ for version in $(cat $REPO_ROOT/.github/matrix.json | jq -r '.swift_version[]');
         docker image rm $DOCKER_USER/$IMAGE_NAME:$version \
             $DOCKER_USER/$IMAGE_NAME:$version-amd64 \
             $DOCKER_USER/$IMAGE_NAME:$version-arm64
+
+        # Clean up on Docker Hub
+        DOCKER_HUB_TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"$DOCKER_USER\",\"password\": \"$DOCKER_HUB_PASSWORD\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+        curl "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${IMAGE_NAME}/tags/${version}-amd64/" \
+            -X DELETE \
+            -H "Authorization: JWT ${DOCKER_HUB_TOKEN}"
+        curl "https://hub.docker.com/v2/repositories/${DOCKER_USER}/${IMAGE_NAME}/tags/${version}-arm64/" \
+            -X DELETE \
+            -H "Authorization: JWT ${DOCKER_HUB_TOKEN}"
     fi
 done
