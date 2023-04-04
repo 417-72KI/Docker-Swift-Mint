@@ -24,3 +24,6 @@ buildx:
 	--tag $(DOCKER_USER)/$(IMAGE_NAME):latest \
 	--tag $(DOCKER_USER)/$(IMAGE_NAME):$(LATEST_SWIFT_VERSION) \
 	.
+
+arm64:
+	@scripts/build_and_push_arm64_image.sh $(DOCKER_USER) $(IMAGE_NAME)
