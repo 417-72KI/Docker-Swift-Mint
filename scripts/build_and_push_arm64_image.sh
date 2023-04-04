@@ -33,16 +33,16 @@ for version in $(echo "$MATRIX_JSON" | jq -r '.swift_version[]'); do
 
         # Create manifest
         docker manifest create "$DOCKER_USER/$IMAGE_NAME:$version" \
-            "$DOCKER_USER/$IMAGE_NAME:$version-amd64" \
-            "$DOCKER_USER/$IMAGE_NAME:$version-arm64"
+            --amend "$DOCKER_USER/$IMAGE_NAME:$version-amd64" \
+            --amend "$DOCKER_USER/$IMAGE_NAME:$version-arm64"
         docker manifest push "$DOCKER_USER/$IMAGE_NAME:$version"
 
         # Create latest manifest
         if [[ "$version" == "$LATEST_VERSION" ]]; then
             echo "\e[32mCreating latest manifest...\e[m"
             docker manifest create "$DOCKER_USER/$IMAGE_NAME:latest" \
-                "$DOCKER_USER/$IMAGE_NAME:$version-amd64" \
-                "$DOCKER_USER/$IMAGE_NAME:$version-arm64"
+                --amend "$DOCKER_USER/$IMAGE_NAME:$version-amd64" \
+                --amend "$DOCKER_USER/$IMAGE_NAME:$version-arm64"
             docker manifest push "$DOCKER_USER/$IMAGE_NAME:latest"
         fi
 
