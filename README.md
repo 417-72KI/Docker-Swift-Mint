@@ -13,15 +13,17 @@ https://github.com/yonaskolb/Mint/blob/master/LICENSE
 
 # Usage
 
+Supported Swift version is 5.6 ~ 5.8
+
 ## Shell
 
 ```sh
-$ docker pull 41772ki/swift-mint:latest
+$ docker pull 41772ki/swift-mint:{swiftVersion}
 $ docker run -it 41772ki/swift-mint
 ```
 
 ## Dockerfile
 
 ```ruby:Dockerfile
-FROM 41772ki/swift-mint:latest
+FROM 41772ki/swift-mint:{swiftVersion}
 ```
