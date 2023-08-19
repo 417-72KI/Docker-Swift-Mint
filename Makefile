@@ -1,6 +1,6 @@
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
-LATEST_SWIFT_VERSION = 5.7
+LATEST_SWIFT_VERSION = 5.8
 
 build:
 	docker build -t $(IMAGE_NAME) .
