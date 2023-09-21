@@ -1,9 +1,9 @@
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
-LATEST_SWIFT_VERSION = 5.8
+LATEST_SWIFT_VERSION = 5.9
 
 build:
-	docker build -t $(IMAGE_NAME) .
+	docker build -t $(IMAGE_NAME):$(LATEST_SWIFT_VERSION) .
 
 swift_version: build
 	docker run ${IMAGE_NAME} swift --version
@@ -27,3 +27,6 @@ buildx:
 
 arm64:
 	@scripts/build_and_push_arm64_image.sh $(DOCKER_USER) $(IMAGE_NAME)
+
+arm64-v:
+	@scripts/build_and_push_arm64_image.sh -s $(shell cat .github/matrix.json | jq -r '.swift_version[]' | peco) -f $(DOCKER_USER) $(IMAGE_NAME)
