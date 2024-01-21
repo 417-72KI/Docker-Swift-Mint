@@ -59,7 +59,7 @@ jobs:
           | Swift | ${SWIFT_VERSION} |
           | Mint  | ${MINT_VERSION}<br>${MINT_REVISION} |
           EOF
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.swift_version }}
           path: versions_table.txt
