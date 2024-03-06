@@ -35,10 +35,16 @@ jobs:
     needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      matrix: 
+        swift_version: ${{ fromJson(needs.generate-matrix.outputs.matrix).swift_version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Mint version
+        id: set-mint-version
+        run: |
+          mint_revision=$(echo '${{ needs.generate-matrix.outputs.matrix }}' | jq -c '.mint_revision' | jq -r '.["${{ matrix.swift_version }}"]')
+          echo "mint-revision=$mint_revision" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -89,7 +95,7 @@ jobs:
           tags: ${{ steps.create-tags.outputs.tags }}
           build-args: |
             SWIFT_VERSION=${{ matrix.swift_version }}
-            MINT_REVISION=${{ matrix.mint_revision }}
+            MINT_REVISION=${{ steps.set-mint-version.outputs.mint-revision }}
       - name: Verify Mint revision to check if it needs to update image
         if: ${{ github.event_name != 'workflow_dispatch' }}
         id: needs-update
@@ -116,4 +122,4 @@ jobs:
           tags: ${{ steps.create-tags.outputs.tags }}
           build-args: |
             SWIFT_VERSION=${{ matrix.swift_version }}
-            MINT_REVISION=${{ matrix.mint_revision }}
+            MINT_REVISION=${{ steps.set-mint-version.outputs.mint-revision }}

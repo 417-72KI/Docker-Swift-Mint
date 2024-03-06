@@ -30,10 +30,16 @@ jobs:
     needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      matrix: 
+        swift_version: ${{ fromJson(needs.generate-matrix.outputs.matrix).swift_version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Mint version
+        id: set-mint-version
+        run: |
+          mint_revision=$(echo '${{ needs.generate-matrix.outputs.matrix }}' | jq -c '.mint_revision' | jq -r '.["${{ matrix.swift_version }}"]')
+          echo "mint-revision=$mint_revision" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
@@ -42,10 +48,10 @@ jobs:
         with:
           push: false
           load: true
-          tags: ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}-${{ matrix.mint_revision }}
+          tags: ${{ env.DOCKER_USER }}/${{ env.DOCKER_REPO }}:${{ matrix.swift_version }}-${{ steps.set-mint-version.outputs.mint-revision }}
           build-args: |
             SWIFT_VERSION=${{ matrix.swift_version }}
-            MINT_REVISION=${{ matrix.mint_revision }}
+            MINT_REVISION=${{ steps.set-mint-version.outputs.mint-revision }}
       - name: Export versions
         id: export-versions
         run: |
