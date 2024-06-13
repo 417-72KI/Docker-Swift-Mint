@@ -1,10 +1,18 @@
+.SILENT:
+
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
 LATEST_SWIFT_VERSION = 5.10
 SWIFT_VERSION = $(LATEST_SWIFT_VERSION)
 
 build:
-	docker build --build-arg SWIFT_VERSION=$(SWIFT_VERSION) -t $(IMAGE_NAME):$(SWIFT_VERSION) .
+	cat .github/matrix.json \
+		| jq -r '.mint_revision["$(SWIFT_VERSION)"]' \
+		| xargs -I {} docker build \
+			--build-arg SWIFT_VERSION=$(SWIFT_VERSION) \
+			--build-arg MINT_REVISION={} \
+			-t $(IMAGE_NAME):$(SWIFT_VERSION) \
+			.
 
 swift_version: build
 	docker run ${IMAGE_NAME} swift --version
