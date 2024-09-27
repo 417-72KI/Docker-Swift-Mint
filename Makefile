@@ -2,7 +2,7 @@
 
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
-LATEST_SWIFT_VERSION = 5.10
+LATEST_SWIFT_VERSION = 6.0
 SWIFT_VERSION = $(LATEST_SWIFT_VERSION)
 
 build:
@@ -11,7 +11,7 @@ build:
 		| xargs -I {} docker build \
 			--build-arg SWIFT_VERSION=$(SWIFT_VERSION) \
 			--build-arg MINT_REVISION={} \
-			-t $(IMAGE_NAME):$(SWIFT_VERSION) \
+			-t $(DOCKER_USER)/$(IMAGE_NAME):$(SWIFT_VERSION) \
 			.
 
 swift_version: build
