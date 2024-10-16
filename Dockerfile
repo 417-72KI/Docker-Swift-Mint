@@ -29,4 +29,5 @@ RUN apt-get update \
     && n stable \
     && apt-get purge -y npm \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && eval "$(which npm) --version" > /.npm_version
