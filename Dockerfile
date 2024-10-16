@@ -1,5 +1,5 @@
 ARG SWIFT_VERSION=6.0
-FROM swift:${SWIFT_VERSION}-focal
+FROM swift:${SWIFT_VERSION}-focal AS base
 
 LABEL maintainer="417-72KI <417.72ki@gmail.com>"
 
@@ -19,3 +19,15 @@ RUN git clone -b "${MINT_REVISION}" --depth 1 "https://github.com/yonaskolb/Mint
     rm -rf ~/Mint
 
 CMD [ "/bin/bash" ]
+
+FROM base AS npm
+
+# Install NPM
+RUN apt-get update \
+    && apt-get install -y npm curl \
+    && npm install -g n \
+    && n stable \
+    && apt-get purge -y npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && eval "$(which npm) --version" > /.npm_version

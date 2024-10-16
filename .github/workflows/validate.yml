@@ -59,11 +59,13 @@ jobs:
           SWIFT_VERSION="$(echo "$(docker run "${IMAGE_ID}" swift --version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           MINT_VERSION="$(echo "$(docker run "${IMAGE_ID}" mint version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           MINT_REVISION="$(echo "$(docker run "${IMAGE_ID}" cat /.mint_revision)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
+          NPM_VERSION="$(echo "$(docker run "${IMAGE_ID}" cat /.npm_version)" | tr '\r\n' ',' | sed -e 's/,,/,/g' | sed -e 's/,$//g' | sed -e 's/,/<br>/g')"
           cat <<EOF > versions_table.txt
           | Tool  | Version description |
           | ----- | ------------------- |
           | Swift | ${SWIFT_VERSION} |
           | Mint  | ${MINT_VERSION}<br>${MINT_REVISION} |
+          | npm   | ${NPM_VERSION} |
           EOF
       - uses: actions/upload-artifact@v4
         with:
