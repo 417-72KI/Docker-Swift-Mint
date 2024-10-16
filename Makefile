@@ -5,26 +5,36 @@ IMAGE_NAME = swift-mint
 LATEST_SWIFT_VERSION = 6.0
 SWIFT_VERSION = $(LATEST_SWIFT_VERSION)
 
-build:
+build: $(addprefix build-, $(LATEST_SWIFT_VERSION))
+
+build-%:
 	cat .github/matrix.json \
-		| jq -r '.mint_revision["$(SWIFT_VERSION)"]' \
+		| jq -r '.mint_revision["${@:build-%=%}"]' \
 		| xargs -I {} docker build \
-			--build-arg SWIFT_VERSION=$(SWIFT_VERSION) \
+			--build-arg SWIFT_VERSION=${@:build-%=%} \
 			--build-arg MINT_REVISION={} \
-			-t $(DOCKER_USER)/$(IMAGE_NAME):$(SWIFT_VERSION) \
+			-t $(DOCKER_USER)/$(IMAGE_NAME):${@:build-%=%} \
 			.
 
-swift_version: build
-	docker run ${IMAGE_NAME} swift --version
+swift-version: $(addprefix swift-version-, $(LATEST_SWIFT_VERSION))
 
-mint_version: build
-	docker run ${IMAGE_NAME} mint version
+swift-version-%: build-%
+	docker run --rm $(DOCKER_USER)/$(IMAGE_NAME):${@:swift-version-%=%} swift --version
 
-run: build
-	docker run -it $(IMAGE_NAME)
+mint-version: $(addprefix mint-version-, $(LATEST_SWIFT_VERSION))
 
-clean:
-	docker rmi $(IMAGE_NAME):latest
+mint-version-%: build-%
+	docker run --rm $(DOCKER_USER)/$(IMAGE_NAME):${@:mint-version-%=%} mint version
+
+run: $(addprefix run-, $(LATEST_SWIFT_VERSION))
+
+run-%: build-%
+	docker run --rm -it $(DOCKER_USER)/$(IMAGE_NAME):${@:run-%=%}
+
+clean: $(addprefix clean-, $(LATEST_SWIFT_VERSION))
+
+clean-%:
+	docker rmi $(DOCKER_USER)/$(IMAGE_NAME):${@:clean-%=%}
 
 buildx:
 	docker buildx build \
@@ -37,5 +47,5 @@ buildx:
 arm64:
 	@scripts/build_and_push_arm64_image.sh $(DOCKER_USER) $(IMAGE_NAME)
 
-arm64-v:
-	@scripts/build_and_push_arm64_image.sh -s $(shell cat .github/matrix.json | jq -r '.swift_version[]' | peco) -f $(DOCKER_USER) $(IMAGE_NAME)
+arm64-%:
+	@scripts/build_and_push_arm64_image.sh -s ${@:clean-%=%} -f $(DOCKER_USER) $(IMAGE_NAME)
