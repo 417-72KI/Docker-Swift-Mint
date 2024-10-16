@@ -1,5 +1,9 @@
 .git
+.github
 .gitignore
 LICENSE
 README.md
 Makefile
+
+hooks
+scripts
