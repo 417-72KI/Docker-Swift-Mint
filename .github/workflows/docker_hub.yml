@@ -43,7 +43,7 @@ jobs:
       - name: Set Mint version
         id: set-mint-version
         run: |
-          mint_revision=$(echo '${{ needs.generate-matrix.outputs.matrix }}' | jq -c '.mint_revision' | jq -r '.["${{ matrix.swift_version }}"]')
+          mint_revision=$(echo '${{ needs.generate-matrix.outputs.matrix }}' | jq -c '.mint_revision' | jq -r '.["${{ matrix.swift_version }}"] // "master"')
           echo "mint-revision=$mint_revision" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
