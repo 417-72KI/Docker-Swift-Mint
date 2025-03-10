@@ -1,22 +1,10 @@
-.SILENT:
+# .SILENT:
 
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
 LATEST_SWIFT_VERSION = 6.0
 
 build: $(addprefix build-, $(LATEST_SWIFT_VERSION))
-
-build-npm: $(addprefix build-npm-, $(LATEST_SWIFT_VERSION))
-
-build-npm-%:
-	cat .github/matrix.json \
-		| jq -r '.mint_revision["${@:build-npm-%=%}"]' \
-		| xargs -I {} docker build \
-			--build-arg SWIFT_VERSION=${@:build-npm-%=%} \
-			--build-arg MINT_REVISION={} \
-			--target npm \
-			-t $(DOCKER_USER)/$(IMAGE_NAME):${@:build-npm-%=%}-npm \
-			.
 
 build-%:
 	cat .github/matrix.json \
@@ -26,6 +14,18 @@ build-%:
 			--build-arg MINT_REVISION={} \
 			--target base \
 			-t $(DOCKER_USER)/$(IMAGE_NAME):${@:build-%=%} \
+			.
+
+npm: $(addprefix npm-, $(LATEST_SWIFT_VERSION))
+
+npm-%:
+	cat .github/matrix.json \
+		| jq -r '.mint_revision["${@:npm-%=%}"]' \
+		| xargs -I {} docker build \
+			--build-arg SWIFT_VERSION=${@:npm-%=%} \
+			--build-arg MINT_REVISION={} \
+			--target npm \
+			-t $(DOCKER_USER)/$(IMAGE_NAME):${@:npm-%=%}-npm \
 			.
 
 swift-version: $(addprefix swift-version-, $(LATEST_SWIFT_VERSION))
