@@ -1,4 +1,4 @@
-# [![Docker Hub](http://dockeri.co/image/41772ki/swift-mint)](https://hub.docker.com/r/41772ki/swift-mint)
+# [swift-mint](https://hub.docker.com/r/41772ki/swift-mint)
 
 Docker image for Mint (Swift)
 
