@@ -13,7 +13,7 @@ https://github.com/yonaskolb/Mint/blob/master/LICENSE
 
 # Usage
 
-Supported Swift version is 5.9 ~ 6.1
+Supported Swift version is 5.10 ~ 6.2
 
 ## Shell
 

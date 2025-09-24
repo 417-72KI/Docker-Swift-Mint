@@ -1,5 +1,5 @@
-ARG SWIFT_VERSION=6.0
-FROM swift:${SWIFT_VERSION}-focal AS base
+ARG SWIFT_VERSION=6.2
+FROM swift:${SWIFT_VERSION}-noble AS base
 
 LABEL maintainer="417-72KI <417.72ki@gmail.com>"
 
