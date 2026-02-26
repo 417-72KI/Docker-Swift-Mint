@@ -67,7 +67,7 @@ jobs:
           | Mint  | ${MINT_VERSION}<br>${MINT_REVISION} |
           | npm   | ${NPM_VERSION} |
           EOF
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: swift-${{ matrix.swift_version }}
           path: versions_table.txt
