@@ -1,4 +1,4 @@
-ARG SWIFT_VERSION=6.2
+ARG SWIFT_VERSION=6.3
 FROM swift:${SWIFT_VERSION}-noble AS base
 
 LABEL maintainer="417-72KI <417.72ki@gmail.com>"
