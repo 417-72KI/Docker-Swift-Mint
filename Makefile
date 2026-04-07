@@ -2,7 +2,7 @@
 
 DOCKER_USER = 41772ki
 IMAGE_NAME = swift-mint
-LATEST_SWIFT_VERSION = 6.2
+LATEST_SWIFT_VERSION = 6.3
 
 build: $(addprefix build-, $(LATEST_SWIFT_VERSION))
 
